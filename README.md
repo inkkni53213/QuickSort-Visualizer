@@ -16,7 +16,7 @@
 - HTML5 + CSS3
 
 ## 🎮 如何体验？
-1. 克隆本仓库：`git clone 你的仓库地址`
+1. 克隆本仓库：`git clone https://github.com/inkkni53213/QuickSort-Visualizer`
 2. 双击打开 `outputs/index.html` 即可。
 
 ## 🤖 AI 声明
