@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1d2127">
+  <title>快速排序 · 手动双指针练习</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div class="brand-copy">
+          <p class="eyebrow">Algorithm Practice Lab · 01</p>
+          <h1>快速排序 · 手动双指针</h1>
+        </div>
+      </div>
+      <div class="mode-badge"><span></span>由你选择轴点 · 由你移动指针</div>
+    </header>
+
+    <main class="workspace">
+      <section class="main-column" aria-label="快速排序手动练习">
+        <article class="panel sorting-panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">排序操作区</h2>
+              <p class="panel-subtitle" id="arraySummary">1–10 的随机排列</p>
+            </div>
+            <span class="status-pill waiting" id="statusPill">等待选择轴点</span>
+          </div>
+
+          <div class="stats" aria-label="练习统计">
+            <div class="stat accent">
+              <span class="stat-label">操作步数</span>
+              <span class="stat-value" id="stepCount">0</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">当前轮次</span>
+              <span class="stat-value"><span id="roundCount">1</span><small>轮</small></span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">比较次数</span>
+              <span class="stat-value"><span id="compareCount">0</span><small>次</small></span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">移动元素</span>
+              <span class="stat-value"><span id="moveCount">0</span><small>次</small></span>
+            </div>
+          </div>
+
+          <div class="pivot-dock" id="pivotDock" aria-live="polite">
+            <div class="pivot-dock-label">
+              <span>PIVOT / 轴点</span>
+              <small id="pivotDockHint">尚未选择</small>
+            </div>
+            <button class="pivot-token empty" id="pivotToken" type="button" aria-label="尚未选择轴点">
+              <span class="pivot-token-mark">P</span>
+              <span class="pivot-token-value" id="pivotValueLabel">—</span>
+            </button>
+          </div>
+
+          <div class="chart-section">
+            <div class="range-strip">
+              <div>
+                <span class="range-label">当前子数组</span>
+                <strong id="rangeText">第 1–10 项</strong>
+              </div>
+              <div class="range-progress" id="rangeProgress">L — · R —</div>
+            </div>
+
+            <div class="chart-wrap" id="chartWrap">
+              <div class="chart" id="chart" role="group" aria-label="可交互排序柱状图"></div>
+              <div class="beacon-layer" id="beaconLayer" aria-hidden="true"></div>
+              <div class="pointer-layer" id="pointerLayer" aria-label="左右指针"></div>
+              <div class="feedback-toast" id="feedback" role="status" aria-live="polite"></div>
+              <div class="drag-ghost" id="dragGhost" aria-hidden="true"></div>
+              <div class="success-banner" id="successBanner" role="status" aria-live="polite">
+                <span class="success-icon">✓</span>
+                <span class="success-copy">
+                  <strong>排序成功！</strong>
+                  <small id="successSummary">所有元素都已就位</small>
+                </span>
+              </div>
+              <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
+            </div>
+          </div>
+
+          <div class="legend" aria-label="图形说明">
+            <span class="legend-item"><i class="legend-swatch base"></i>待排序</span>
+            <span class="legend-item"><i class="legend-swatch pivot"></i>轴点候选</span>
+            <span class="legend-item"><i class="legend-swatch compare"></i>正在检查</span>
+            <span class="legend-item"><i class="legend-swatch hole"></i>空位</span>
+            <span class="legend-item"><i class="legend-swatch settled"></i>已就位</span>
+            <span class="legend-item legend-pointer"><b>L</b> 左指针</span>
+            <span class="legend-item legend-pointer"><b>R</b> 右指针</span>
+          </div>
+
+          <div class="mission" id="missionPanel">
+            <div class="mission-icon" id="missionIcon">1</div>
+            <div class="mission-copy">
+              <span class="mission-kicker" id="missionKicker">NEXT ACTION</span>
+              <h3 id="missionTitle">选择本轮基准点</h3>
+              <p id="missionText">当前子数组最左侧的柱子必须是基准点。点击图中带有呼吸光晕的柱子。</p>
+            </div>
+          </div>
+
+          <div class="action-bar">
+            <button class="action-button primary" id="mainAction" type="button">等待你在图中选择</button>
+            <button class="action-button" id="undoButton" type="button" disabled>↶ 撤销</button>
+            <button class="action-button" id="resetButton" type="button">↺ 重置本题</button>
+          </div>
+
+          <div class="gesture-help">
+            <span><kbd>点击指针下</kbd> 先判断当前元素</span>
+            <span><kbd>系统判断</kbd> 不需要移动时指针自动前进</span>
+            <span><kbd>拖动元素</kbd> 需要移动时填入虚线空位</span>
+          </div>
+        </article>
+      </section>
+
+      <aside class="side-column" aria-label="数据与操作说明">
+        <section class="panel side-panel">
+          <div class="side-heading">
+            <div>
+              <h2>题目设置</h2>
+              <p>元素始终是 1…n 的排列</p>
+            </div>
+            <span>DATA</span>
+          </div>
+
+          <label class="field-label" for="countRange">
+            <span>元素数量 n</span>
+            <strong><span id="countValue">10</span> / 100</strong>
+          </label>
+          <div class="count-row">
+            <input id="countRange" type="range" min="2" max="100" value="10" step="1">
+            <label for="countInput" class="sr-only">输入元素数量</label>
+            <input id="countInput" class="count-box" type="number" min="2" max="100" value="10">
+          </div>
+          <button class="wide-button mint" id="randomButton" type="button">✦ 随机生成 1…<span id="randomCount">10</span></button>
+
+          <div class="divider"></div>
+
+          <label class="field-label" for="customInput">
+            <span>自定义顺序</span>
+            <strong>必须是 1…n</strong>
+          </label>
+          <textarea id="customInput" class="custom-field" spellcheck="false" placeholder="例如：10, 7, 3, 1, 8, 9, 2, 6, 5, 4"></textarea>
+          <p class="form-note">可粘贴任意顺序，但 1…n 中每个数字必须恰好出现一次。</p>
+          <button class="wide-button" id="applyCustom" type="button">应用自定义排列</button>
+          <p class="error-text" id="inputError" role="alert" aria-live="polite"></p>
+        </section>
+
+        <section class="panel side-panel">
+          <div class="side-heading">
+            <div>
+              <h2>操作顺序</h2>
+              <p>每一步都由你完成</p>
+            </div>
+            <span>GUIDE</span>
+          </div>
+          <ol class="step-guide" id="stepGuide">
+            <li class="active" data-guide="pivot">
+              <span>01</span>
+              <div><strong>选择轴点</strong><small>点击当前子数组最左元素</small></div>
+            </li>
+            <li data-guide="right">
+              <span>02</span>
+              <div><strong>判断右指针 R</strong><small>点击 R 下元素，判断后指针左移</small></div>
+            </li>
+            <li data-guide="left">
+              <span>03</span>
+              <div><strong>判断左指针 L</strong><small>点击 L 下元素，判断后指针右移</small></div>
+            </li>
+            <li data-guide="place">
+              <span>04</span>
+              <div><strong>填入轴点</strong><small>左右指针相遇后完成一次分区</small></div>
+            </li>
+          </ol>
+
+          <div class="pending-box">
+            <div class="pending-head">
+              <span>待处理子数组</span>
+              <strong id="pendingCount">0</strong>
+            </div>
+            <div class="pending-list" id="pendingList">
+              <span class="empty-state">选择第一个轴点后开始记录</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel side-panel rule-card">
+          <div class="rule-symbol">!</div>
+          <div>
+            <h2>基准点规则</h2>
+            <p>每一轮都只用当前子数组的<strong>最左元素</strong>作为基准点。如果点错位置，系统会提示你重新选择。</p>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      <span><strong>MANUAL QUICKSORT</strong> · 填坑式双指针</span>
+      <span>1…n UNIQUE VALUES · 2–100 ELEMENTS</span>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
